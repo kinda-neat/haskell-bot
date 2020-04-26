@@ -14,21 +14,58 @@ import qualified Data.ByteString.Lazy as B
 
 data TestConfig = TestConfig { a :: String, b :: Int }
 
+data HelpCommand = HelpCommand
+  { messageInReply :: String
+  } deriving (Show)
+
+data RepeatCommand = RepeatCommand
+  { questionText :: String
+  , possibleOptions :: [Int]
+  , selectedOption :: Int
+  } deriving (Show)
+
+data Commands = Commands
+  { help :: HelpCommand
+  , repeat :: RepeatCommand
+  } deriving (Show)
+
+data Config = Config
+  { commands :: Commands
+  } deriving (Show)
+
+instance FromJSON HelpCommand where
+  parseJSON (Object o) =
+    HelpCommand <$> o .: "messageInReply"
+
+instance FromJSON RepeatCommand where
+  parseJSON (Object o) =
+    RepeatCommand <$> o .: "questionText"
+                  <*> o .: "possibleOptions"
+                  <*> o .: "selectedOption"
+
+instance FromJSON Commands where
+  parseJSON (Object o) =
+    Commands <$> o .: "help"
+             <*> o .: "repeat"
+
+instance FromJSON Config where
+  parseJSON (Object o) =
+    Config <$> o .: "commands"
+
 defaultConfig :: TestConfig
 defaultConfig = TestConfig { a = "aaa", b = 333 }
 
 readConfig :: IO ()
 readConfig = do
-  file <- B.readFile "testconfig.json"
+  file <- B.readFile "config.json" -- pass as cli arg
   let config = extractConfig file
-  putStrLn $ show $ a config
-  putStrLn $ show $ b config
+  putStrLn $ show $ config
   return ()
 
-extractConfig :: B.ByteString -> TestConfig
+extractConfig :: B.ByteString -> Config
 extractConfig file = case decode file of
   Nothing -> error "cannot decode file"
-  Just val -> case (parseMaybe parseTestConfig val) of
+  Just val -> case (parseMaybe parseJSON val) of
           Nothing -> error "could not extract config values"
           Just config -> config
 
