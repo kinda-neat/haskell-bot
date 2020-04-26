@@ -1,0 +1,12 @@
+{
+  "commands": {
+    "help": {
+      "messageInReply": "Here is the bot description"
+    },
+    "repeat": {
+      "questionText": "What times do you want the bot to repeat reply?",
+      "possibleOptions": [1,2,3,4,5],
+      "selectedOption": 3
+    }
+  }
+}
