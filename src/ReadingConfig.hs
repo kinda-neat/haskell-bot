@@ -12,8 +12,6 @@ import Data.Maybe
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy as B
 
-data TestConfig = TestConfig { a :: String, b :: Int }
-
 data HelpCommand = HelpCommand
   { messageInReply :: String
   } deriving (Show)
@@ -52,9 +50,6 @@ instance FromJSON Config where
   parseJSON (Object o) =
     Config <$> o .: "commands"
 
-defaultConfig :: TestConfig
-defaultConfig = TestConfig { a = "aaa", b = 333 }
-
 readConfig :: IO ()
 readConfig = do
   file <- B.readFile "config.json" -- pass as cli arg
@@ -69,8 +64,3 @@ extractConfig file = case decode file of
           Nothing -> error "could not extract config values"
           Just config -> config
 
-parseTestConfig :: Value -> Parser TestConfig
-parseTestConfig (Object o) = do
-  aValue <- o .: "a"
-  bValue <- o .: "b"
-  return $ TestConfig { a = aValue, b = bValue }
