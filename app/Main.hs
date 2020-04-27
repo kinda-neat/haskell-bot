@@ -1,7 +1,7 @@
 module Main where
 
 import System.Environment
-import ReadingConfig (readConfig, Config(..))
+import ReadConfig (readConfig, Config(..))
 
 main :: IO ()
 main = do

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ReadingConfig (readConfig, Config(..)) where
+module ReadConfig (readConfig, Config(..)) where
 
 import Data.Aeson
 import Data.Aeson.Types
