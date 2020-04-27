@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ReadingConfig where
+module ReadingConfig (readConfig, Config(..)) where
 
 import Data.Aeson
 import Data.Aeson.Types
@@ -50,17 +50,15 @@ instance FromJSON Config where
   parseJSON (Object o) =
     Config <$> o .: "commands"
 
-readConfig :: IO ()
-readConfig = do
-  file <- B.readFile "config.json" -- pass as cli arg
-  let config = extractConfig file
-  putStrLn $ show $ config
-  return ()
+readConfig :: String -> IO Config
+readConfig fileName = do
+  file <- B.readFile fileName
+  return $ extractConfig file
 
 extractConfig :: B.ByteString -> Config
 extractConfig file = case decode file of
-  Nothing -> error "cannot decode file"
+  Nothing -> error "could not decode a file"
   Just val -> case (parseMaybe parseJSON val) of
-          Nothing -> error "could not extract config values"
+          Nothing -> error "could not extract a config values"
           Just config -> config
 

@@ -1,8 +1,11 @@
 module Main where
 
-import Lib
-import AesonPractice
-import ReadingConfig
+import System.Environment
+import ReadingConfig (readConfig, Config(..))
 
 main :: IO ()
-main = readConfig
+main = do
+  (fileName:_) <- getArgs
+  config <- readConfig fileName
+  putStrLn $ show config
+  return ()
