@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b2d2c7f1ff92fa294c7b69c258ac5d1869c60ecc66208eb505f6b06f238d9d29
+-- hash: 5dbe62df89c231e201078057f7fec4ade7d04e388542de9b7fa0137b6218fda8
 
 name:           haskell-bot
 version:        0.1.0.0
@@ -27,7 +27,6 @@ source-repository head
 
 library
   exposed-modules:
-      AesonPractice
       Lib
       ReadConfig
       TelegramAPI
