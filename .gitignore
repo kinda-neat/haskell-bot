@@ -1,4 +1,5 @@
 .stack-work/
 .vscode
 .history
+dev.config.json
 *~

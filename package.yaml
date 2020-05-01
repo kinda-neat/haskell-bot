@@ -26,6 +26,8 @@ dependencies:
 - bytestring
 - unordered-containers
 - vector
+- req
+- http-client
 
 library:
   source-dirs: src

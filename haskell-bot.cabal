@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c641e0b566020517e7320fc998276b5b7c56a9dec24a713acd3e0b6df98ca4c6
+-- hash: b2d2c7f1ff92fa294c7b69c258ac5d1869c60ecc66208eb505f6b06f238d9d29
 
 name:           haskell-bot
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       AesonPractice
       Lib
       ReadConfig
+      TelegramAPI
   other-modules:
       Paths_haskell_bot
   hs-source-dirs:
@@ -38,6 +39,8 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
+    , http-client
+    , req
     , text
     , unordered-containers
     , vector
@@ -55,6 +58,8 @@ executable haskell-bot-exe
     , base >=4.7 && <5
     , bytestring
     , haskell-bot
+    , http-client
+    , req
     , text
     , unordered-containers
     , vector
@@ -73,6 +78,8 @@ test-suite haskell-bot-test
     , base >=4.7 && <5
     , bytestring
     , haskell-bot
+    , http-client
+    , req
     , text
     , unordered-containers
     , vector

@@ -8,5 +8,12 @@
       "possibleOptions": [1,2,3,4,5],
       "selectedOption": 3
     }
+  },
+  "telegram": {
+    "token": "your_token",
+    "proxy": {
+      "host": "host",
+      "port": 80
+    }
   }
 }

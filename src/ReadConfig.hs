@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ReadConfig (readConfig, Config(..)) where
+module ReadConfig (readConfig, Config(..), TelegramConfig(..), TelegramProxy(..)) where
 
 import Data.Aeson
 import Data.Aeson.Types
@@ -27,9 +27,30 @@ data Commands = Commands
   , repeat :: RepeatCommand
   } deriving (Show)
 
-data Config = Config
-  { commands :: Commands
+data TelegramConfig = TelegramConfig
+  { token :: String,
+    proxy :: TelegramProxy
   } deriving (Show)
+
+data TelegramProxy = TelegramProxy
+  { proxyHostForTelegram :: String,
+    proxyPortForTelegram :: Int
+  } deriving (Show)
+
+data Config = Config
+  { commands :: Commands,
+    telegram :: TelegramConfig
+  } deriving (Show)
+
+instance FromJSON TelegramConfig where
+  parseJSON (Object o) =
+    TelegramConfig <$> o .: "token"
+                   <*> o .: "proxy"
+
+instance FromJSON TelegramProxy where
+  parseJSON (Object o) =
+    TelegramProxy <$> o .: "host"
+                  <*> o .: "port"
 
 instance FromJSON HelpCommand where
   parseJSON (Object o) =
@@ -48,7 +69,7 @@ instance FromJSON Commands where
 
 instance FromJSON Config where
   parseJSON (Object o) =
-    Config <$> o .: "commands"
+    Config <$> o .: "commands" <*> o .: "telegram"
 
 readConfig :: String -> IO Config
 readConfig fileName = do

@@ -1,11 +1,12 @@
 module Main where
 
+import ReadConfig (Config(..), readConfig)
 import System.Environment
-import ReadConfig (readConfig, Config(..))
+import TelegramAPI
 
 main :: IO ()
 main = do
   (fileName:_) <- getArgs
   config <- readConfig fileName
-  putStrLn $ show config
+  pollServer (telegram config) Nothing
   return ()
