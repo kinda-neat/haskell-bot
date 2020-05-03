@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 26362ba3f4d829d2c0fe658f2a4dafb44be237b5d625ddbefc91d8589c084262
+-- hash: e12724efbc5d82c86f458174573cdf268e3f908d8dfa75d5917b45b71b65a93a
 
 name:           haskell-bot
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Bot
       ReadConfig
       TelegramAPI
   other-modules:
@@ -40,6 +41,7 @@ library
     , http-client
     , req
     , text
+    , transformers
     , unordered-containers
     , vector
   default-language: Haskell2010
@@ -59,6 +61,7 @@ executable haskell-bot-exe
     , http-client
     , req
     , text
+    , transformers
     , unordered-containers
     , vector
   default-language: Haskell2010
@@ -79,6 +82,7 @@ test-suite haskell-bot-test
     , http-client
     , req
     , text
+    , transformers
     , unordered-containers
     , vector
   default-language: Haskell2010

@@ -28,6 +28,7 @@ dependencies:
 - vector
 - req
 - http-client
+- transformers
 
 library:
   source-dirs: src

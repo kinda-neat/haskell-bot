@@ -2,6 +2,7 @@
 
 module TelegramAPI where
 
+import qualified Bot
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
@@ -26,39 +27,60 @@ makeHttpConfig :: TelegramConfig -> HttpConfig
 makeHttpConfig config =
   defaultHttpConfig {httpConfigProxy = makeProxyConfig config}
 
-pollServer :: TelegramConfig -> (Maybe Integer) -> IO ()
-pollServer config offset =
-  runReq httpConfig $ do
-    s <- getUpdatesReq (token config) offset
-    case (parseEither parseGetUpdatesRes (responseBody s)) of
-      Left e -> liftIO $ logMe e
-      Right updates -> do
-        let newLastUpdateId = getNewLastUpdateId (result updates) offset
-        if newLastUpdateId == offset
-          then do
-            liftIO $ logMe "No updates. Polling server..."
-            liftIO $ pollServer config offset
-          else do
-            let lastMessage = message . last $ result updates
-                messageFrom = from lastMessage
-                lastMessageChatId = chatId . mChat $ lastMessage
-            echoMessageReq 5 config lastMessageChatId lastMessage
-            liftIO $ logMe $ makeMessageFrom lastMessage messageFrom
-            liftIO $ logMe "Got new updates. Polling server..."
-            liftIO $ pollServer config newLastUpdateId
+runTelegramBot ::
+     TelegramConfig -> Bot.BotPayload -> IO (Bot.BotCommand, Bot.BotPayload)
+runTelegramBot config payload@(Bot.TelegramRunBotPayload lastUpdateId) = do
+  putStrLn "Making new request"
+  lastUpdates <- makeGetUpdatesReq config lastUpdateId
+  case parseGetUpdatesRes lastUpdates of
+    Left e -> error "Could not parse updates from telegram."
+    Right res -> do
+      let updates = result res
+          newLastUpdateId = getNewLastUpdateId updates lastUpdateId
+      if newLastUpdateId == lastUpdateId
+        then runTelegramBot config payload
+        else return
+               ( identifyCommand $ last updates
+               , Bot.TelegramRunBotPayload newLastUpdateId)
+
+identifyCommand :: TUpdate -> Bot.BotCommand
+identifyCommand update
+  | msg == "help" = Bot.Help msgChatId
+  | msg == "repeat" = Bot.Repeat msgChatId
+  | otherwise = Bot.Message msgChatId msg
   where
-    httpConfig = (makeHttpConfig config)
+    msg = text . message $ update
+    msgChatId = chatId . mChat . message $ update
+
+makeGetUpdatesReq :: TelegramConfig -> Maybe Integer -> IO (JsonResponse Value)
+makeGetUpdatesReq config offset =
+  runReq (makeHttpConfig config) $ getUpdatesReq (token config) offset
+
+parseGetUpdatesRes :: JsonResponse Value -> Either String (TResponse [TUpdate])
+parseGetUpdatesRes updates = parseEither parseJSON (responseBody updates)
+
+showTelegramBotDescription :: TelegramConfig -> Integer -> String -> IO ()
+showTelegramBotDescription config chatId desc = do
+  _ <- makeShowTelegramBotDescReq config chatId desc
+  return ()
+
+makeShowTelegramBotDescReq ::
+     TelegramConfig -> Integer -> String -> IO (JsonResponse Value)
+makeShowTelegramBotDescReq config chatId desc =
+  runReq (makeHttpConfig config) $ sendMessageReq config chatId desc
+
+replyToTelegramMessage :: TelegramConfig -> Integer -> Int -> String -> IO ()
+replyToTelegramMessage config chatId times msg =
+  runReq (makeHttpConfig config) $ echoMessageReq config chatId times msg
 
 logMe :: String -> IO ()
 logMe = putStrLn
 
-echoMessageReq :: Int -> TelegramConfig -> Integer -> TMessage -> Req ()
-echoMessageReq times config chatId message =
+echoMessageReq :: TelegramConfig -> Integer -> Int -> String -> Req ()
+echoMessageReq config chatId times msg =
   mapM_
     (runReq (makeHttpConfig config))
-    (replicate
-       times
-       (sendMessageReq config chatId ("Got message from you: " ++ text message)))
+    (replicate times (sendMessageReq config chatId msg))
 
 makeMessageFrom :: TMessage -> TMessageFrom -> String
 makeMessageFrom msg msgFrom =
@@ -89,9 +111,6 @@ sendMessageReq config chatId text =
     NoReqBody
     jsonResponse
     ("chat_id" =: chatId <> "text" =: text)
-
-parseGetUpdatesRes :: Value -> Parser (TResponse [TUpdate])
-parseGetUpdatesRes = parseJSON
 
 getNewLastUpdateId :: [TUpdate] -> Maybe Integer -> Maybe Integer
 getNewLastUpdateId [] lastUpdateId = lastUpdateId

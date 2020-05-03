@@ -3,6 +3,9 @@
 module ReadConfig
   ( readConfig
   , Config(..)
+  , HelpCommand(..)
+  , Commands(..)
+  , RepeatCommand(..)
   , TelegramConfig(..)
   , TelegramProxy(..)
   ) where
@@ -28,8 +31,8 @@ data RepeatCommand = RepeatCommand
   } deriving (Show)
 
 data Commands = Commands
-  { help :: HelpCommand
-  , repeat :: RepeatCommand
+  { helpCommand :: HelpCommand
+  , repeatCommand :: RepeatCommand
   } deriving (Show)
 
 data TelegramConfig = TelegramConfig
