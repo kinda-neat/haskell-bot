@@ -22,56 +22,66 @@ makeProxyConfig config =
     proxyHost = pack $ proxyHostForTelegram $ proxy config
     proxyPort = proxyPortForTelegram $ proxy config
 
+makeHttpConfig :: TelegramConfig -> HttpConfig
+makeHttpConfig config =
+  defaultHttpConfig {httpConfigProxy = makeProxyConfig config}
+
 pollServer :: TelegramConfig -> (Maybe Integer) -> IO ()
 pollServer config offset =
-  runReq (defaultHttpConfig {httpConfigProxy = makeProxyConfig config}) $ do
-    s <-
-      req
-        GET
-        (https "api.telegram.org" /: (T.pack $ "bot" ++ token config) /:
-         "getUpdates")
-        NoReqBody
-        jsonResponse
-        (if isJust offset
-           then "offset" =: fromJust offset
-           else mempty)
-    let updates = parseEither parseGetUpdatesResponse (responseBody s)
-    case updates of
-      Left e -> liftIO $ putStrLn $ show e
-      Right _updates -> do
-        let newLastUpdateId = getNewLastUpdateId (result _updates) offset
-        liftIO $ putStrLn $ "Polling server..."
+  runReq httpConfig $ do
+    s <- getUpdatesReq (token config) offset
+    case (parseEither parseGetUpdatesRes (responseBody s)) of
+      Left e -> liftIO $ logMe e
+      Right updates -> do
+        let newLastUpdateId = getNewLastUpdateId (result updates) offset
         if newLastUpdateId == offset
-          then liftIO $ pollServer config offset
+          then do
+            liftIO $ logMe "No updates. Polling server..."
+            liftIO $ pollServer config offset
           else do
-            let lastMessage = message . last $ result _updates
+            let lastMessage = message . last $ result updates
                 messageFrom = from lastMessage
                 lastMessageChatId = chatId . mChat $ lastMessage
-            mapM_
-              (\x ->
-                 runReq
-                   (defaultHttpConfig {httpConfigProxy = makeProxyConfig config})
-                   x)
-              (replicate 5 $
-               (sendMessageRequest
-                  config
-                  lastMessageChatId
-                  ("Got message from you: " ++ text lastMessage)))
-            liftIO $
-              putStrLn $
-              show $
-              "New message: " ++
-              text lastMessage ++
-              " from username = " ++
-              username messageFrom ++
-              " and name = " ++
-              first_name messageFrom ++ " " ++ last_name messageFrom
-            liftIO $ putStrLn $ "Made a new request"
+            echoMessageReq 5 config lastMessageChatId lastMessage
+            liftIO $ logMe $ makeMessageFrom lastMessage messageFrom
+            liftIO $ logMe "Got new updates. Polling server..."
             liftIO $ pollServer config newLastUpdateId
+  where
+    httpConfig = (makeHttpConfig config)
 
-sendMessageRequest ::
+logMe :: String -> IO ()
+logMe = putStrLn
+
+echoMessageReq :: Int -> TelegramConfig -> Integer -> TMessage -> Req ()
+echoMessageReq times config chatId message =
+  mapM_
+    (runReq (makeHttpConfig config))
+    (replicate
+       times
+       (sendMessageReq config chatId ("Got message from you: " ++ text message)))
+
+makeMessageFrom :: TMessage -> TMessageFrom -> String
+makeMessageFrom msg msgFrom =
+  "New message: " ++
+  text msg ++
+  " from username = " ++
+  username msgFrom ++
+  " and name = " ++ first_name msgFrom ++ " " ++ last_name msgFrom
+
+getUpdatesReq :: String -> (Maybe Integer) -> Req (JsonResponse Value)
+getUpdatesReq token offset =
+  req
+    GET
+    (https "api.telegram.org" /: (T.pack $ "bot" ++ token) /: "getUpdates")
+    NoReqBody
+    jsonResponse
+    (if isJust offset
+       then "offset" =: fromJust offset
+       else mempty)
+
+sendMessageReq ::
      TelegramConfig -> Integer -> String -> Req (JsonResponse Value)
-sendMessageRequest config chatId text =
+sendMessageReq config chatId text =
   req
     GET
     (https "api.telegram.org" /: (T.pack $ "bot" ++ token config) /:
@@ -80,8 +90,8 @@ sendMessageRequest config chatId text =
     jsonResponse
     ("chat_id" =: chatId <> "text" =: text)
 
-parseGetUpdatesResponse :: Value -> Parser (TResponse [TUpdate])
-parseGetUpdatesResponse = parseJSON
+parseGetUpdatesRes :: Value -> Parser (TResponse [TUpdate])
+parseGetUpdatesRes = parseJSON
 
 getNewLastUpdateId :: [TUpdate] -> Maybe Integer -> Maybe Integer
 getNewLastUpdateId [] lastUpdateId = lastUpdateId
