@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module TelegramAPI where
+module TelegramBot where
 
 import qualified Bot
 import Control.Monad
