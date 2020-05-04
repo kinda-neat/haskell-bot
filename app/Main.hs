@@ -12,7 +12,7 @@ import ReadConfig
   , readConfig
   )
 import System.Environment
-import TelegramBot
+import TelegramBot.Bot
 
 showBotDescriptionMock :: Integer -> String -> IO ()
 showBotDescriptionMock _ desc = putStrLn desc

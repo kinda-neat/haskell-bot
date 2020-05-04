@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module TelegramBot where
+module TelegramBot.Bot where
 
 import qualified Bot
 import Control.Monad
@@ -14,7 +14,7 @@ import qualified Data.Text.Lazy.Encoding as T
 import qualified Data.Text.Lazy.IO as T
 import Network.HTTP.Client (Proxy(..))
 import Network.HTTP.Req
-import ReadConfig (TelegramConfig(..), TelegramProxy(..))
+import ReadConfig (RepeatCommand(..), TelegramConfig(..), TelegramProxy(..))
 
 makeProxyConfig :: TelegramConfig -> Maybe Proxy
 makeProxyConfig config =
@@ -115,9 +115,6 @@ sendMessageReq config chatId text =
 getNewLastUpdateId :: [TUpdate] -> Maybe Integer -> Maybe Integer
 getNewLastUpdateId [] lastUpdateId = lastUpdateId
 getNewLastUpdateId updates _ = Just ((+ 1) . update_id . last $ updates)
-
-extractAllTexts :: [TUpdate] -> [String]
-extractAllTexts = foldr (\x xs -> (text . message $ x) : xs) []
 
 data TResponse a = TResponse
   { ok :: Bool
