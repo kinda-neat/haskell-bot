@@ -15,6 +15,7 @@ import qualified Data.Text.Lazy.IO as T
 import Network.HTTP.Client (Proxy(..))
 import Network.HTTP.Req
 import ReadConfig (RepeatCommand(..), TelegramConfig(..), TelegramProxy(..))
+import TelegramBot.Types
 
 makeProxyConfig :: TelegramConfig -> Maybe Proxy
 makeProxyConfig config =
@@ -115,52 +116,3 @@ sendMessageReq config chatId text =
 getNewLastUpdateId :: [TUpdate] -> Maybe Integer -> Maybe Integer
 getNewLastUpdateId [] lastUpdateId = lastUpdateId
 getNewLastUpdateId updates _ = Just ((+ 1) . update_id . last $ updates)
-
-data TResponse a = TResponse
-  { ok :: Bool
-  , result :: a
-  } deriving (Show)
-
-instance (FromJSON a) => FromJSON (TResponse a) where
-  parseJSON (Object o) = TResponse <$> o .: "ok" <*> o .: "result"
-
-data TUpdate = TUpdate
-  { update_id :: Integer
-  , message :: TMessage
-  } deriving (Show)
-
-instance FromJSON TUpdate where
-  parseJSON (Object o) = TUpdate <$> o .: "update_id" <*> o .: "message"
-
-data TMessage = TMessage
-  { message_id :: Integer
-  , text :: String
-  , from :: TMessageFrom
-  , mChat :: TChat
-  } deriving (Show)
-
-instance FromJSON TMessage where
-  parseJSON (Object o) =
-    TMessage <$> o .: "message_id" <*> o .: "text" <*> o .: "from" <*>
-    o .: "chat"
-
-data TMessageFrom = TMessageFrom
-  { id :: Integer
-  , first_name :: String
-  , last_name :: String
-  , username :: String
-  , language_code :: String
-  } deriving (Show)
-
-instance FromJSON TMessageFrom where
-  parseJSON (Object o) =
-    TMessageFrom <$> o .: "id" <*> o .: "first_name" <*> o .: "last_name" <*>
-    o .: "username" <*>
-    o .: "language_code"
-
-data TChat = TChat
-  { chatId :: Integer
-  } deriving (Show)
-
-instance FromJSON TChat where
-  parseJSON (Object o) = TChat <$> o .: "id"
