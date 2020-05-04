@@ -12,7 +12,9 @@ import ReadConfig
   , readConfig
   )
 import System.Environment
+import System.IO
 import TelegramBot.Bot
+import UserPreferences (createPrefsFileIfDontExist, saveSelectedOption)
 
 showBotDescriptionMock :: Integer -> String -> IO ()
 showBotDescriptionMock _ desc = putStrLn desc
@@ -33,6 +35,7 @@ replyToMessageMock times message = mapM_ putStrLn $ replicate times message
 data Env = Env
   { envConfig :: Config
   , envBotActions :: BotActions
+  , envUserPrefsActions :: UserPrefsActions
   }
 
 main :: IO ()
@@ -47,13 +50,22 @@ main = do
           , askNumberToRepeatMessage = askNumberToRepeatMessageMock
           , replyToMessage = replyToTelegramMessage telegramConfig
           }
-      env = Env {envConfig = config, envBotActions = botActions}
+      userPrefsActions =
+        UserPrefsActions {upSaveSelectedOption = saveSelectedOption}
+      env =
+        Env
+          { envConfig = config
+          , envBotActions = botActions
+          , envUserPrefsActions = userPrefsActions
+          }
+  createPrefsFileIfDontExist
   runReaderT (runApp (TelegramRunBotPayload Nothing)) env
 
 runApp :: BotPayload -> ReaderT Env IO ()
 runApp botPayload = do
   config <- asks envConfig
   botActions <- asks envBotActions
+  userPrefsActions <- asks envUserPrefsActions
   botRequest <- lift $ runBot botActions botPayload
   let botDescription = messageInReply . helpCommand . commands $ config
       replyTimes = selectedOption . repeatCommand . commands $ config
@@ -62,7 +74,7 @@ runApp botPayload = do
       (Help chatId) -> showBotDescription botActions chatId botDescription
       (Repeat chatId) -> do
         newRepeatTimes <- askNumberToRepeatMessage botActions "question" 5
-        putStrLn $ "New repeat times " ++ show newRepeatTimes
+        upSaveSelectedOption userPrefsActions 100 newRepeatTimes
         return ()
       (Message chatId msg) -> replyToMessage botActions chatId replyTimes msg
   runApp (snd botRequest)

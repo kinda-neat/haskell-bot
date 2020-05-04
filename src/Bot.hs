@@ -14,7 +14,13 @@ data BotActions = BotActions
   , replyToMessage :: ChatId -> ReplyTimes -> String -> IO ()
   }
 
+data UserPrefsActions = UserPrefsActions
+  { upSaveSelectedOption :: Integer -> Int -> IO ()
+  }
+
 type LastUpdateId = Maybe Integer
+
+type UserId = Integer
 
 type ChatId = Integer
 

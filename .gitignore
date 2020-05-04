@@ -2,4 +2,5 @@
 .vscode
 .history
 dev.config.json
+user-preferences.json
 *~

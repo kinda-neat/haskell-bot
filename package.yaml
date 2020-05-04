@@ -29,6 +29,7 @@ dependencies:
 - req
 - http-client
 - transformers
+- directory
 
 library:
   source-dirs: src
