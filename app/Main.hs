@@ -32,12 +32,14 @@ main = do
   (fileName:_) <- getArgs
   config <- readConfig fileName
   let telegramConfig = telegram config
+      options = possibleOptions . repeatCommand . commands $ config
+      question = questionText . repeatCommand . commands $ config
       botActions =
         BotActions
           { runBot = runTelegramBot telegramConfig
           , showBotDescription = showTelegramBotDescription telegramConfig
           , askNumberToRepeatMessage =
-              askNumberToRepeatMessageInTelegram telegramConfig
+              askNumberToRepeatMessageInTelegram telegramConfig options question
           , confirmSelectedOptionSaved =
               confirmSelectedOptionSavedInTelegram telegramConfig
           , replyToMessage = replyToTelegramMessage telegramConfig
@@ -63,9 +65,7 @@ runApp botPayload = do
   userPrefsActions <- asks envUserPrefsActions
   botRequest <- lift $ runBot botActions botPayload
   let botDescription = messageInReply . helpCommand . commands $ config
-      question = questionText . repeatCommand . commands $ config
       replyTimes = selectedOption . repeatCommand . commands $ config
-      options = possibleOptions . repeatCommand . commands $ config
       selectedOptByDefault = selectedOption . repeatCommand . commands $ config
   lift $
     case fst botRequest of
@@ -75,8 +75,6 @@ runApp botPayload = do
         askNumberToRepeatMessage
           botActions
           chatId
-          options
-          question
           (fromMaybe selectedOptByDefault userOption)
       (SelectOption questionId userId replyTimes) -> do
         userOption <- getUserSpecifiedOption userId

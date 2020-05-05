@@ -48,17 +48,20 @@ identifyCommand (TCallbackQueryUpdate {callbackQuery = TCallbackQuery { cqId = q
                                                                       , cqFromUser = cqFromUser
                                                                       , cqData = cqData
                                                                       }}) =
-  Bot.SelectOption queryId userId (readMaybe cqData :: Maybe Int)
+  Bot.SelectOption
+    (Bot.QuestionId queryId)
+    userId
+    (readMaybe cqData :: Maybe Int)
   where
-    userId = uId cqFromUser
+    userId = (Bot.UserId $ uId cqFromUser)
 identifyCommand update
   | msg == "/help" = Bot.Help msgChatId
   | msg == "/repeat" = Bot.Repeat msgChatId userId
   | otherwise = Bot.Message msgChatId userId msg
   where
     msg = text . message $ update
-    msgChatId = chatId . mChat . message $ update
-    userId = messageFromId . from . message $ update
+    msgChatId = Bot.ChatId $ chatId . mChat . message $ update
+    userId = Bot.UserId $ messageFromId . from . message $ update
 
 makeGetUpdatesReq :: TelegramConfig -> Maybe Integer -> IO (JsonResponse Value)
 makeGetUpdatesReq config offset =
@@ -67,21 +70,27 @@ makeGetUpdatesReq config offset =
 parseGetUpdatesRes :: JsonResponse Value -> Either String (TResponse [TUpdate])
 parseGetUpdatesRes updates = parseEither parseJSON (responseBody updates)
 
-showTelegramBotDescription :: TelegramConfig -> Integer -> String -> IO ()
+showTelegramBotDescription ::
+     TelegramConfig -> Bot.ChatId -> Bot.BotDescription -> IO ()
 showTelegramBotDescription config chatId desc = do
   _ <- makeShowTelegramBotDescReq config chatId desc
   return ()
 
 makeShowTelegramBotDescReq ::
-     TelegramConfig -> Integer -> String -> IO (JsonResponse Value)
+     TelegramConfig
+  -> Bot.ChatId
+  -> Bot.BotDescription
+  -> IO (JsonResponse Value)
 makeShowTelegramBotDescReq config chatId desc =
   runReq (makeHttpConfig config) $ sendMessageReq config chatId desc
 
-replyToTelegramMessage :: TelegramConfig -> Integer -> Int -> String -> IO ()
+replyToTelegramMessage ::
+     TelegramConfig -> Bot.ChatId -> Bot.Option -> Bot.MessageText -> IO ()
 replyToTelegramMessage config chatId times msg =
   runReq (makeHttpConfig config) $ echoMessageReq config chatId times msg
 
-echoMessageReq :: TelegramConfig -> Integer -> Int -> String -> Req ()
+echoMessageReq ::
+     TelegramConfig -> Bot.ChatId -> Bot.Option -> Bot.MessageText -> Req ()
 echoMessageReq config chatId times msg =
   mapM_
     (runReq (makeHttpConfig config))
@@ -106,8 +115,8 @@ getUpdatesReq token offset =
        else mempty)
 
 sendMessageReq ::
-     TelegramConfig -> Integer -> String -> Req (JsonResponse Value)
-sendMessageReq config chatId text =
+     TelegramConfig -> Bot.ChatId -> Bot.MessageText -> Req (JsonResponse Value)
+sendMessageReq config (Bot.ChatId chatId) text =
   req
     GET
     (https "api.telegram.org" /: (T.pack $ "bot" ++ token config) /:
@@ -128,8 +137,8 @@ makeButtons options =
     ]
 
 confirmSelectedOptionSavedInTelegram ::
-     TelegramConfig -> String -> String -> IO ()
-confirmSelectedOptionSavedInTelegram config queryId confirmText = do
+     TelegramConfig -> Bot.QuestionId -> Bot.ConfirmText -> IO ()
+confirmSelectedOptionSavedInTelegram config (Bot.QuestionId queryId) confirmText = do
   _ <-
     runReq (makeHttpConfig config) $
     req
@@ -142,8 +151,13 @@ confirmSelectedOptionSavedInTelegram config queryId confirmText = do
   return ()
 
 askNumberToRepeatMessageInTelegram ::
-     TelegramConfig -> Integer -> [Bot.Option] -> String -> Bot.Option -> IO ()
-askNumberToRepeatMessageInTelegram config chatId options question currentOption = do
+     TelegramConfig
+  -> [Bot.Option]
+  -> Bot.QuestionText
+  -> Bot.ChatId
+  -> Bot.Option
+  -> IO ()
+askNumberToRepeatMessageInTelegram config options question (Bot.ChatId chatId) currentOption = do
   _ <-
     runReq (makeHttpConfig config) $
     req

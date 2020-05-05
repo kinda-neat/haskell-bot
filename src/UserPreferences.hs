@@ -27,7 +27,7 @@ instance ToJSON UserPreferences where
 
 type SelectedOption = Int
 
-type Preferences = HM.HashMap Bot.UserId UserPreferences
+type Preferences = HM.HashMap Integer UserPreferences
 
 data UserPreferences = UserPreferences
   { selectedOption :: SelectedOption
@@ -44,7 +44,7 @@ createPrefsFileIfDontExist = do
     else return ()
 
 saveSelectedOption :: Bot.UserId -> SelectedOption -> IO ()
-saveSelectedOption userId option = do
+saveSelectedOption (Bot.UserId userId) option = do
   preferences <- readUserPreferences
   writeUserPreferences
     (HM.insert userId (UserPreferences {selectedOption = option}) preferences)
@@ -65,7 +65,7 @@ readUserPreferences =
        return preferences)
 
 getUserSpecifiedOption :: Bot.UserId -> IO (Maybe Int)
-getUserSpecifiedOption userId = do
+getUserSpecifiedOption (Bot.UserId userId) = do
   prefs <- readUserPreferences
   return $ selectedOption <$> HM.lookup userId prefs
 

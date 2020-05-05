@@ -6,36 +6,48 @@ data BotCommand
            UserId
   | Message ChatId
             UserId
-            String
+            MessageText
   | SelectOption QuestionId
                  UserId
-                 (Maybe ReplyTimes)
+                 (Maybe Option)
   deriving (Show)
 
 data BotActions = BotActions
   { runBot :: BotPayload -> IO (BotCommand, BotPayload)
-  , showBotDescription :: ChatId -> String -> IO ()
-  , askNumberToRepeatMessage :: Integer -> [Option] -> String -> Option -> IO ()
-  , confirmSelectedOptionSaved :: QuestionId -> String -> IO ()
-  , replyToMessage :: ChatId -> ReplyTimes -> String -> IO ()
+  , showBotDescription :: ChatId -> BotDescription -> IO ()
+  , askNumberToRepeatMessage :: ChatId -> Option -> IO ()
+  , confirmSelectedOptionSaved :: QuestionId -> ConfirmText -> IO ()
+  , replyToMessage :: ChatId -> Option -> MessageText -> IO ()
   }
 
 data UserPrefsActions = UserPrefsActions
-  { upSaveSelectedOption :: Integer -> Int -> IO ()
+  { upSaveSelectedOption :: UserId -> Int -> IO ()
   , upGetUserSpecifiedOption :: UserId -> IO (Maybe Int)
   }
 
 type LastUpdateId = Maybe Integer
 
-type UserId = Integer
+newtype UserId =
+  UserId Integer
+  deriving (Show)
 
-type ChatId = Integer
+newtype ChatId =
+  ChatId Integer
+  deriving (Show)
 
 type Option = Int
 
-type ReplyTimes = Int
+newtype QuestionId =
+  QuestionId String
+  deriving (Show)
 
-type QuestionId = String
+type QuestionText = String
+
+type ConfirmText = String
+
+type BotDescription = String
+
+type MessageText = String
 
 data BotPayload
   = TelegramRunBotPayload LastUpdateId
