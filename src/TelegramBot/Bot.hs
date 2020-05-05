@@ -3,13 +3,9 @@
 module TelegramBot.Bot where
 
 import qualified Bot
-import Control.Monad
-import Control.Monad.IO.Class
 import Data.Aeson
-import Data.Aeson.Text
 import Data.Aeson.Types
 import Data.ByteString.Char8 (pack)
-import qualified Data.Map as Map
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Lazy.Encoding as T
@@ -84,9 +80,6 @@ makeShowTelegramBotDescReq config chatId desc =
 replyToTelegramMessage :: TelegramConfig -> Integer -> Int -> String -> IO ()
 replyToTelegramMessage config chatId times msg =
   runReq (makeHttpConfig config) $ echoMessageReq config chatId times msg
-
-logMe :: String -> IO ()
-logMe = putStrLn
 
 echoMessageReq :: TelegramConfig -> Integer -> Int -> String -> Req ()
 echoMessageReq config chatId times msg =
