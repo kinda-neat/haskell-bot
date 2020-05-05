@@ -21,22 +21,6 @@ import UserPreferences
   , saveSelectedOption
   )
 
-showBotDescriptionMock :: Integer -> String -> IO ()
-showBotDescriptionMock _ desc = putStrLn desc
-
-askNumberToRepeatMessageMock :: String -> Int -> IO Int
-askNumberToRepeatMessageMock question repeatTimes = do
-  putStrLn $ question ++ " Number of times: " ++ show repeatTimes
-  rawRepeatTimes <- getChar
-  let newRepeatTimes =
-        if isDigit rawRepeatTimes
-          then digitToInt rawRepeatTimes
-          else repeatTimes
-  return newRepeatTimes
-
-replyToMessageMock :: Int -> String -> IO ()
-replyToMessageMock times message = mapM_ putStrLn $ replicate times message
-
 data Env = Env
   { envConfig :: Config
   , envBotActions :: BotActions
