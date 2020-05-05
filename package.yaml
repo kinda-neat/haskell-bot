@@ -30,6 +30,7 @@ dependencies:
 - http-client
 - transformers
 - directory
+- containers
 
 library:
   source-dirs: src

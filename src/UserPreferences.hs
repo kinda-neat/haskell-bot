@@ -64,6 +64,11 @@ readUserPreferences =
                Right val -> parsePreferences val
        return preferences)
 
+getUserSpecifiedOption :: Bot.UserId -> IO (Maybe Int)
+getUserSpecifiedOption userId = do
+  prefs <- readUserPreferences
+  return $ selectedOption <$> HM.lookup userId prefs
+
 writeUserPreferences :: Preferences -> IO ()
 writeUserPreferences prefs =
   withFile userPreferencesFileName WriteMode (\h -> B.hPut h (encode prefs))

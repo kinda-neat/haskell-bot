@@ -13,10 +13,12 @@ data TResponse a = TResponse
   , result :: a
   } deriving (Show)
 
-data TUpdate = TUpdate
-  { update_id :: Integer
-  , message :: TMessage
-  } deriving (Show)
+data TUpdate
+  = TMessageUpdate { update_id :: Integer
+                   , message :: TMessage }
+  | TCallbackQueryUpdate { update_id :: Integer
+                         , callbackQuery :: TCallbackQuery }
+  deriving (Show)
 
 data TMessage = TMessage
   { message_id :: Integer
@@ -26,22 +28,46 @@ data TMessage = TMessage
   } deriving (Show)
 
 data TMessageFrom = TMessageFrom
-  { id :: Integer
+  { messageFromId :: Integer
   , first_name :: String
-  , last_name :: String
   , username :: String
-  , language_code :: String
   } deriving (Show)
 
 data TChat = TChat
   { chatId :: Integer
   } deriving (Show)
 
+data TUser = TUser
+  { uId :: Integer
+  , uFirstName :: String
+  } deriving (Show)
+
+instance FromJSON TUser where
+  parseJSON (Object o) = TUser <$> o .: "id" <*> o .: "first_name"
+
+data TCallbackQuery = TCallbackQuery
+  { cqId :: String
+  , cqMessage :: TMessage
+  , cqFromUser :: TUser
+  , cqData :: String
+  } deriving (Show)
+
+data InlineKeyboardButton = InlineKeyboardButton
+  { buttonText :: String
+  , buttonValue :: Int
+  }
+
 instance (FromJSON a) => FromJSON (TResponse a) where
   parseJSON (Object o) = TResponse <$> o .: "ok" <*> o .: "result"
 
 instance FromJSON TUpdate where
-  parseJSON (Object o) = TUpdate <$> o .: "update_id" <*> o .: "message"
+  parseJSON =
+    withObject "TUpdate" $ \o -> do
+      message <- (o .:? "message" :: Parser (Maybe TMessage))
+      case message of
+        Nothing ->
+          TCallbackQueryUpdate <$> o .: "update_id" <*> o .: "callback_query"
+        Just _ -> TMessageUpdate <$> o .: "update_id" <*> o .: "message"
 
 instance FromJSON TMessage where
   parseJSON (Object o) =
@@ -50,9 +76,16 @@ instance FromJSON TMessage where
 
 instance FromJSON TMessageFrom where
   parseJSON (Object o) =
-    TMessageFrom <$> o .: "id" <*> o .: "first_name" <*> o .: "last_name" <*>
-    o .: "username" <*>
-    o .: "language_code"
+    TMessageFrom <$> o .: "id" <*> o .: "first_name" <*> o .: "username"
 
 instance FromJSON TChat where
   parseJSON (Object o) = TChat <$> o .: "id"
+
+instance FromJSON TCallbackQuery where
+  parseJSON (Object o) =
+    TCallbackQuery <$> o .: "id" <*> o .: "message" <*> o .: "from" <*>
+    o .: "data"
+
+instance ToJSON InlineKeyboardButton where
+  toJSON (InlineKeyboardButton {buttonText = text, buttonValue = callback_data}) =
+    object ["text" .= text, "callback_data" .= callback_data]

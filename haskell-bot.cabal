@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cbb44e84cea1e3be0c0c84f6d1b9e1ffc88c3bce956d5d6d504d25533bfdb4f2
+-- hash: 72b5174e91fd6618ca6ec510a431cc036190493d32e0c5d89403184a0836a626
 
 name:           haskell-bot
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , directory
     , http-client
     , req
@@ -60,6 +61,7 @@ executable haskell-bot-exe
       aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , directory
     , haskell-bot
     , http-client
@@ -82,6 +84,7 @@ test-suite haskell-bot-test
       aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , directory
     , haskell-bot
     , http-client
