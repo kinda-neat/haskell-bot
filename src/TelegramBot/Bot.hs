@@ -56,8 +56,8 @@ identifyCommand (TCallbackQueryUpdate {callbackQuery = TCallbackQuery { cqId = q
   where
     userId = uId cqFromUser
 identifyCommand update
-  | msg == "help" = Bot.Help msgChatId
-  | msg == "repeat" = Bot.Repeat msgChatId userId
+  | msg == "/help" = Bot.Help msgChatId
+  | msg == "/repeat" = Bot.Repeat msgChatId userId
   | otherwise = Bot.Message msgChatId userId msg
   where
     msg = text . message $ update
