@@ -63,12 +63,12 @@ runApp botPayload = do
   config <- asks envConfig
   botActions <- asks envBotActions
   userPrefsActions <- asks envUserPrefsActions
-  botRequest <- lift $ runBot botActions botPayload
+  (botCommand, botPayload) <- lift $ runBot botActions botPayload
   let botDescription = messageInReply . helpCommand . commands $ config
       replyTimes = selectedOption . repeatCommand . commands $ config
       selectedOptByDefault = selectedOption . repeatCommand . commands $ config
   lift $
-    case fst botRequest of
+    case botCommand of
       (Help chatId) -> showBotDescription botActions chatId botDescription
       (Repeat chatId userId) -> do
         userOption <- getUserSpecifiedOption userId
@@ -93,4 +93,4 @@ runApp botPayload = do
           chatId
           (fromMaybe selectedOptByDefault userOption)
           msg
-  runApp (snd botRequest)
+  runApp botPayload
