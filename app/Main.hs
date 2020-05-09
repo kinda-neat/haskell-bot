@@ -20,6 +20,7 @@ import UserPreferences
   , getUserSpecifiedOption
   , saveSelectedOption
   )
+import VKBot.Bot (getVKLongPollAccessInfo)
 
 data Env = Env
   { envConfig :: Config
@@ -31,6 +32,7 @@ main :: IO ()
 main = do
   (fileName:_) <- getArgs
   config <- readConfig fileName
+  logVkAccessInfo config
   let telegramConfig = telegram config
       options = possibleOptions . repeatCommand . commands $ config
       question = questionText . repeatCommand . commands $ config
@@ -57,6 +59,11 @@ main = do
           }
   createPrefsFileIfDontExist
   runReaderT (runApp (TelegramRunBotPayload Nothing)) env
+
+logVkAccessInfo :: Config -> IO ()
+logVkAccessInfo config = do
+  vkAccessInfo <- getVKLongPollAccessInfo $ vk config
+  putStrLn $ show vkAccessInfo
 
 runApp :: BotPayload -> ReaderT Env IO ()
 runApp botPayload = do

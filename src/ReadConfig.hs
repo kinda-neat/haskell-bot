@@ -8,6 +8,7 @@ module ReadConfig
   , RepeatCommand(..)
   , TelegramConfig(..)
   , TelegramProxy(..)
+  , VKConfig(..)
   ) where
 
 import Data.Aeson
@@ -45,9 +46,15 @@ data TelegramProxy = TelegramProxy
   , proxyPortForTelegram :: Int
   } deriving (Show)
 
+data VKConfig = VKConfig
+  { vkToken :: String
+  , vkGroupId :: Integer
+  } deriving (Show)
+
 data Config = Config
   { commands :: Commands
   , telegram :: TelegramConfig
+  , vk :: VKConfig
   } deriving (Show)
 
 instance FromJSON TelegramConfig where
@@ -55,6 +62,9 @@ instance FromJSON TelegramConfig where
 
 instance FromJSON TelegramProxy where
   parseJSON (Object o) = TelegramProxy <$> o .: "host" <*> o .: "port"
+
+instance FromJSON VKConfig where
+  parseJSON (Object o) = VKConfig <$> o .: "token" <*> o .: "group_id"
 
 instance FromJSON HelpCommand where
   parseJSON (Object o) = HelpCommand <$> o .: "messageInReply"
@@ -68,7 +78,8 @@ instance FromJSON Commands where
   parseJSON (Object o) = Commands <$> o .: "help" <*> o .: "repeat"
 
 instance FromJSON Config where
-  parseJSON (Object o) = Config <$> o .: "commands" <*> o .: "telegram"
+  parseJSON (Object o) =
+    Config <$> o .: "commands" <*> o .: "telegram" <*> o .: "vk"
 
 readConfig :: String -> IO Config
 readConfig fileName = do

@@ -52,5 +52,7 @@ type MessageText = String
 data BotPayload
   = TelegramRunBotPayload LastUpdateId
   | TelegramShowDescPayload Integer
-  | VKBotPayload
+  | VKBotPayload { vkKey :: String
+                 , vkServer :: String
+                 , vkTs :: Integer }
   deriving (Show)

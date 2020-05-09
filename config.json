@@ -15,5 +15,9 @@
       "host": "host",
       "port": 80
     }
+  },
+  "vk": {
+    "group_id": 100000000,
+    "token": "your_token"
   }
 }
