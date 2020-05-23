@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d3cc4b273e80c644bc7effd083898abaf2a6f562eecd494e4cd3ea1492b12a1b
+-- hash: 743b5ba775e467ae6bd1b431d9c2fa92a71c43f4b8a4d16ee98a09882fd29592
 
 name:           haskell-bot
 version:        0.1.0.0
@@ -46,6 +46,7 @@ library
     , directory
     , http-client
     , req
+    , split
     , text
     , transformers
     , unordered-containers
@@ -68,6 +69,7 @@ executable haskell-bot-exe
     , haskell-bot
     , http-client
     , req
+    , split
     , text
     , transformers
     , unordered-containers
@@ -91,6 +93,7 @@ test-suite haskell-bot-test
     , haskell-bot
     , http-client
     , req
+    , split
     , text
     , transformers
     , unordered-containers

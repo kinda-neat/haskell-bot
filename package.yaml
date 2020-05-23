@@ -31,6 +31,7 @@ dependencies:
 - transformers
 - directory
 - containers
+- split
 
 library:
   source-dirs: src

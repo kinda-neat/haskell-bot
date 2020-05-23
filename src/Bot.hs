@@ -54,5 +54,5 @@ data BotPayload
   | TelegramShowDescPayload Integer
   | VKBotPayload { vkKey :: String
                  , vkServer :: String
-                 , vkTs :: Integer }
+                 , vkTs :: Int }
   deriving (Show)
