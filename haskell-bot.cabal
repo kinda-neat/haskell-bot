@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 743b5ba775e467ae6bd1b431d9c2fa92a71c43f4b8a4d16ee98a09882fd29592
+-- hash: 1bc108f403f6c57671c1cf7875b42d4d36ff37be960c1e8a684e363383d5d5dc
 
 name:           haskell-bot
 version:        0.1.0.0
@@ -28,9 +28,14 @@ source-repository head
 library
   exposed-modules:
       Bot
+      Bot.Core
+      Bot.Core.Telegram.Telegram
+      Bot.Domain
+      Bot.Infrastructure.Telegram.Requests
+      Bot.Infrastructure.Telegram.Telegram
+      Bot.Infrastructure.Telegram.Types
+      Bot.MachineCode
       ReadConfig
-      TelegramBot.Bot
-      TelegramBot.Types
       UserPreferences
       VKBot.Bot
       VKBot.Types
@@ -40,11 +45,13 @@ library
       src
   build-depends:
       aeson
+    , array
     , base >=4.7 && <5
     , bytestring
     , containers
     , directory
     , http-client
+    , mtl
     , req
     , split
     , text
@@ -62,12 +69,14 @@ executable haskell-bot-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , array
     , base >=4.7 && <5
     , bytestring
     , containers
     , directory
     , haskell-bot
     , http-client
+    , mtl
     , req
     , split
     , text
@@ -86,12 +95,14 @@ test-suite haskell-bot-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , array
     , base >=4.7 && <5
     , bytestring
     , containers
     , directory
     , haskell-bot
     , http-client
+    , mtl
     , req
     , split
     , text

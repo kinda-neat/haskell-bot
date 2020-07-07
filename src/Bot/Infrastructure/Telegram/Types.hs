@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module TelegramBot.Types where
+module Bot.Infrastructure.Telegram.Types where
 
 import Data.Aeson
 import Data.Aeson.Types

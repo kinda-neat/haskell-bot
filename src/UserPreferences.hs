@@ -2,7 +2,6 @@
 
 module UserPreferences where
 
-import qualified Bot
 import Control.Exception
 import Control.Monad (guard)
 import Data.Aeson
@@ -27,7 +26,9 @@ instance ToJSON UserPreferences where
 
 type SelectedOption = Int
 
-type Preferences = HM.HashMap Integer UserPreferences
+type UserId = String
+
+type Preferences = HM.HashMap String UserPreferences
 
 data UserPreferences = UserPreferences
   { selectedOption :: SelectedOption
@@ -43,8 +44,8 @@ createPrefsFileIfDontExist = do
     then writeFile userPreferencesFileName "{}"
     else return ()
 
-saveSelectedOption :: Bot.UserId -> SelectedOption -> IO ()
-saveSelectedOption (Bot.UserId userId) option = do
+saveSelectedOption :: UserId -> SelectedOption -> IO ()
+saveSelectedOption userId option = do
   preferences <- readUserPreferences
   writeUserPreferences
     (HM.insert userId (UserPreferences {selectedOption = option}) preferences)
@@ -64,8 +65,8 @@ readUserPreferences =
                Right val -> parsePreferences val
        return preferences)
 
-getUserSpecifiedOption :: Bot.UserId -> IO (Maybe Int)
-getUserSpecifiedOption (Bot.UserId userId) = do
+getUserSpecifiedOption :: UserId -> IO (Maybe Int)
+getUserSpecifiedOption userId = do
   prefs <- readUserPreferences
   return $ selectedOption <$> HM.lookup userId prefs
 

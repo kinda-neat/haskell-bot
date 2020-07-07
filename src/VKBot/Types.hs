@@ -3,7 +3,6 @@
 module VKBot.Types where
 
 import qualified Bot
-
 import Data.Aeson
 import Data.Aeson.Types
 import qualified Data.Text as T
