@@ -37,8 +37,8 @@ data UserPreferences = UserPreferences
 userPreferencesFileName :: String
 userPreferencesFileName = "user-preferences.json"
 
-createPrefsFileIfDontExist :: IO ()
-createPrefsFileIfDontExist = do
+ensureUserPreferencesFileExists :: IO ()
+ensureUserPreferencesFileExists = do
   fileExist <- doesFileExist userPreferencesFileName
   if not fileExist
     then writeFile userPreferencesFileName "{}"
