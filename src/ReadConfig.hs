@@ -7,7 +7,6 @@ module ReadConfig
   , Commands(..)
   , RepeatCommand(..)
   , TelegramConfig(..)
-  , TelegramProxy(..)
   , VKConfig(..)
   ) where
 
@@ -38,12 +37,6 @@ data Commands = Commands
 
 data TelegramConfig = TelegramConfig
   { token :: String
-  , proxy :: TelegramProxy
-  } deriving (Show)
-
-data TelegramProxy = TelegramProxy
-  { proxyHostForTelegram :: String
-  , proxyPortForTelegram :: Int
   } deriving (Show)
 
 data VKConfig = VKConfig
@@ -58,10 +51,7 @@ data Config = Config
   } deriving (Show)
 
 instance FromJSON TelegramConfig where
-  parseJSON (Object o) = TelegramConfig <$> o .: "token" <*> o .: "proxy"
-
-instance FromJSON TelegramProxy where
-  parseJSON (Object o) = TelegramProxy <$> o .: "host" <*> o .: "port"
+  parseJSON (Object o) = TelegramConfig <$> o .: "token"
 
 instance FromJSON VKConfig where
   parseJSON (Object o) = VKConfig <$> o .: "token" <*> o .: "group_id"

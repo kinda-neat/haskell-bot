@@ -32,8 +32,6 @@ main :: IO ()
 main = do
   (fileName:_) <- getArgs
   config <- readConfig fileName
-  vkPayload <- logVkAccessInfo config
-  pollVK (vk config, vkPayload)
   let telegramConfig = telegram config
       options = possibleOptions . repeatCommand . commands $ config
       question = questionText . repeatCommand . commands $ config

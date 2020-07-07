@@ -10,22 +10,10 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Lazy.Encoding as T
 import qualified Data.Text.Lazy.IO as T
-import Network.HTTP.Client (Proxy(..))
 import Network.HTTP.Req
-import ReadConfig (RepeatCommand(..), TelegramConfig(..), TelegramProxy(..))
+import ReadConfig (RepeatCommand(..), TelegramConfig(..))
 import TelegramBot.Types
 import Text.Read
-
-makeProxyConfig :: TelegramConfig -> Maybe Proxy
-makeProxyConfig config =
-  Just $ Proxy {proxyHost = proxyHost, proxyPort = proxyPort}
-  where
-    proxyHost = pack $ proxyHostForTelegram $ proxy config
-    proxyPort = proxyPortForTelegram $ proxy config
-
-makeHttpConfig :: TelegramConfig -> HttpConfig
-makeHttpConfig config =
-  defaultHttpConfig {httpConfigProxy = makeProxyConfig config}
 
 runTelegramBot ::
      TelegramConfig -> Bot.BotPayload -> IO (Bot.BotCommand, Bot.BotPayload)
@@ -65,7 +53,7 @@ identifyCommand update
 
 makeGetUpdatesReq :: TelegramConfig -> Maybe Integer -> IO (JsonResponse Value)
 makeGetUpdatesReq config offset =
-  runReq (makeHttpConfig config) $ getUpdatesReq (token config) offset
+  runReq defaultHttpConfig $ getUpdatesReq (token config) offset
 
 parseGetUpdatesRes :: JsonResponse Value -> Either String (TResponse [TUpdate])
 parseGetUpdatesRes updates = parseEither parseJSON (responseBody updates)
@@ -82,18 +70,18 @@ makeShowTelegramBotDescReq ::
   -> Bot.BotDescription
   -> IO (JsonResponse Value)
 makeShowTelegramBotDescReq config chatId desc =
-  runReq (makeHttpConfig config) $ sendMessageReq config chatId desc
+  runReq defaultHttpConfig $ sendMessageReq config chatId desc
 
 replyToTelegramMessage ::
      TelegramConfig -> Bot.ChatId -> Bot.Option -> Bot.MessageText -> IO ()
 replyToTelegramMessage config chatId times msg =
-  runReq (makeHttpConfig config) $ echoMessageReq config chatId times msg
+  runReq defaultHttpConfig $ echoMessageReq config chatId times msg
 
 echoMessageReq ::
      TelegramConfig -> Bot.ChatId -> Bot.Option -> Bot.MessageText -> Req ()
 echoMessageReq config chatId times msg =
   mapM_
-    (runReq (makeHttpConfig config))
+    (runReq defaultHttpConfig)
     (replicate times (sendMessageReq config chatId msg))
 
 makeMessageFrom :: TMessage -> TMessageFrom -> String
@@ -140,7 +128,7 @@ confirmSelectedOptionSavedInTelegram ::
      TelegramConfig -> Bot.QuestionId -> Bot.ConfirmText -> IO ()
 confirmSelectedOptionSavedInTelegram config (Bot.QuestionId queryId) confirmText = do
   _ <-
-    runReq (makeHttpConfig config) $
+    runReq defaultHttpConfig $
     req
       GET
       (https "api.telegram.org" /: (T.pack $ "bot" ++ token config) /:
@@ -159,7 +147,7 @@ askNumberToRepeatMessageInTelegram ::
   -> IO ()
 askNumberToRepeatMessageInTelegram config options question (Bot.ChatId chatId) currentOption = do
   _ <-
-    runReq (makeHttpConfig config) $
+    runReq defaultHttpConfig $
     req
       GET
       (https "api.telegram.org" /: (T.pack $ "bot" ++ token config) /:

@@ -10,11 +10,7 @@
     }
   },
   "telegram": {
-    "token": "your_token",
-    "proxy": {
-      "host": "host",
-      "port": 80
-    }
+    "token": "your_token"
   },
   "vk": {
     "group_id": 100000000,
